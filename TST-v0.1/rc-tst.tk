@@ -1,0 +1,20 @@
+#    tst
+#    an airplug compatible program
+#    author: Bertrand Ducourthial AT utc.fr, Anthony Buisset (v0.1)
+#    license type: free of charge license for academic and research purpose
+#    see license.txt
+###############################################################################
+
+# Mnemonique pour le header TST, contenant le nom de l'application qui a emis
+# le message transporte.
+set TST_rc_mnemoapp "apptst"
+
+set TST_rc_mnemoPayload "payload"
+
+# Mêmes mnemoniques que ROU
+set TST_rc_mnemoTypeMessage "typeMessage"
+
+set TST_rc_mnemoDestNode "destNode"
+
+set TST_rc_mnemoDestApp "destApp"
+

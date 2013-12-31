@@ -1,0 +1,125 @@
+#    tst
+#    an airplug compatible program
+#    author: Bertrand Ducourthial AT utc.fr, Anthony Buisset (v0.1)
+#    license type: free of charge license for academic and research purpose
+#    see license.txt
+### MODULE RECEPTION ##########################################################
+
+### VARIABLES DU MODULE #######################################################
+# dernier message recu
+set TST_rcv_msg $APG_msg_unknown
+
+# application emettrice du dernier message (en cas d'option --whatwho)
+set TST_rcv_app $APG_msg_unknown
+
+# mnemonique pour le header TST, contenant le nom de l'application qui a emis
+# le message transporte.
+set TST_rcv_mnemoapp $TST_rc_mnemoapp
+
+###############################################################################
+
+
+### ZONE DU MODULE ############################################################
+## zone du module reception
+labelframe .rcv -pady 2 -padx 2 \
+    -text "Réception \[$APP, ident = $APG_ident\]"  -fg $APG_int_coltitle
+
+label .rcv.t1 -text "Dernier message reçu de "
+label .rcv.app -textvariable TST_rcv_app -width 4 -fg $APG_int_colmsgrcv
+label .rcv.t2 -text " : "
+label .rcv.msg -textvariable TST_rcv_msg -width 64  -fg $APG_int_colmsgrcv -anchor w
+pack .rcv.t1 .rcv.app .rcv.t2 .rcv.msg -side left -fill y -pady 2
+
+# affichage des sous-zones de la zone rcv
+pack .rcv.msg .rcv.app -side left -fill y -pady 2
+
+###############################################################################
+
+
+### OPTIONS DE LA LIGNE DE COMMANDE ###########################################
+foreach option $APG_lstargs {
+    set name [lindex [split $option "="] 0]
+    set value [lindex [split $option "="] 1]
+    
+    switch -- $name {
+				--source {
+						#--------------------------------------------------------------------------------
+						# applications emettrices auxquelles il faut s'abonner
+						#--------------------------------------------------------------------------------
+						if { $value == "" } {
+								APG_vrb_dispwarning "option $name trouvee sans argument ; ignoree"
+						} else {
+								APG_vrb_dispnotif "option $option trouvee, abonnement a l'app source $value"
+								APG_begin_lch $value
+						}
+				}
+    }
+}
+###############################################################################
+
+### PROCEDURES DU MODULE ######################################################
+
+#-- Procedure APG_receive_whatwho --------------------------------------------#
+# Action : gere la reception de messages                                      #
+# Remarq : surcharge de LIBAPGTK                                              #
+# Entree : payload et emetteur                                                #
+# Retour : rien                                                               #
+#-----------------------------------------------------------------------------#
+proc APG_receive_whatwho { what who } {
+
+	# Mise a jour de l'interface du module rcv.
+    set ::TST_rcv_msg $what
+    set ::TST_rcv_app $who
+
+	APG_vrb_dispdebug "TST reception $who ||| $what "
+
+		# Traitement different selon l'emetteur.
+    switch -- $::TST_rcv_app \
+				$::APP {
+
+						# Reception d'un message d'une application TST distante,
+						# => transfert vers l'application BAS locale.
+						
+						# Recuperation de la valeur du champs application emettrice dans le
+						# message recu.
+						set app [APG_msg_splitstr what $::TST_rcv_mnemoapp]
+
+						# Recuperation eventuelle d'autres champs.
+
+						# Ajout eventuel de traitements ici.
+
+						# Recuperation du message qui a ete concatene au header
+						# a l'emission. TST_rcv_mnemoapp doit etre le dernier mnemonique
+						# avant le message concatene. Adapter si des champs ont ete ajoutes.
+						set msg [APG_msg_endstr what $::TST_rcv_mnemoapp true]
+
+						# Transfert du message a l'application locale $app
+						TST_snd_send $msg $app
+				} \
+				default {
+						# Reception d'un message d'une application autre que TST.
+						# On suppose donc qu'il s'agit d'une application locale dont les
+						# communications sont interceptees par TST pour realiser un controle
+						# sur son execution.
+						# => transfert vers les applications TST distantes.
+						
+						# Ajout eventuel de traitements ici.
+
+
+						# Creation d'un header contenant l'application emettrice.
+						# Utilisation d'un mnemonique pour retrouver ce champs
+						# facilement a la reception.
+						set header [APG_msg_createmsg $::TST_rcv_mnemoapp $who]
+
+						# Ajout eventuel d'autres champs dans le header ici.
+
+						# Formation du message en concatenant le header et le message recu.
+						set msg [APG_msg_concatemsg $header $what]
+
+						# Appel de la procedure d'emission pour emettre le message msg
+						# vers d'autres applications TST (cette procedure permet de mettre
+						# a jour l'interface du module snd). NB : $::APP = "TST".
+						TST_snd_send $msg $::APP
+				}
+}
+

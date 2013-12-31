@@ -1,0 +1,51 @@
+#    tst
+#    an airplug compatible program
+#    author: Bertrand Ducourthial AT utc.fr, Anthony Buisset (v0.1)
+#    license type: free of charge license for academic and research purpose
+#    see license.txt
+### MODULE EMISSION ###########################################################
+
+### VARIABLES DU MODULE #######################################################
+set TST_snd_msg $APG_msg_unknown
+set TST_snd_app $APG_msg_unknown
+###############################################################################
+
+
+### ZONE DU MODULE ############################################################
+labelframe .snd -pady 2 -padx 2 \
+    -text "Emission \[$APP, ident = $APG_ident\]" -fg $APG_int_coltitle
+
+label .snd.t1 -text "Dernier message émis vers "
+label .snd.app -textvariable TST_snd_app -width 4 -fg $APG_int_colmsgsnd
+label .snd.t2 -text " : "
+label .snd.msg -textvariable TST_snd_msg -width 64  -fg $APG_int_colmsgsnd -anchor w
+pack .snd.t1 .snd.app .snd.t2 .snd.msg -side left -fill y -pady 2
+
+# affichage des sous-zones de la zone snd
+pack .snd.msg .snd.app -side left -fill y -pady 2
+
+
+###############################################################################
+
+
+### PROCEDURE DU MODULE #######################################################
+
+#-- Procedure TST_snd_send ---------------------------------------------------#
+# Action : procedure appelee par le module rcv pour emettre le message et     #
+#          mettre a jour l'interface du module snd.                           #
+# Entree : payload et emetteur                                                #
+# Retour : rien                                                               #
+#-----------------------------------------------------------------------------#
+proc TST_snd_send { what who } {
+
+		# Mise a jour de l'interface du module snd.
+		set ::TST_snd_msg $what
+		set ::TST_snd_app $who
+
+		# Emission proprement dite.
+		APG_send_whatwho $what $who
+}
+
+###############################################################################
+
+
