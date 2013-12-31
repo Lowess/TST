@@ -1,0 +1,102 @@
+#    tst
+#    an airplug compatible program
+#    author: Bertrand Ducourthial AT utc.fr, newapp from NET v0.31
+#    license type: free of charge license for academic and research purpose
+#    see license.txt
+### MODULE ROUTAGE #####################################################
+ 
+### VARIABLES OF THE MODULE ############################################
+set TST_msg_mnemoapp $TST_rc_mnemoapp
+set TST_msg_mnemoPayload $TST_rc_mnemoPayload
+
+#Les mnemoniques suivants doivent être ceux de ROU
+set TST_msg_mnemoDestNode $TST_rc_mnemoDestNode
+set TST_msg_mnemoDestApp $TST_rc_mnemoDestApp
+set TST_msg_mnemoTypeMessage $TST_rc_mnemoTypeMessage
+
+######################################################################## 
+ 
+### GRAPHICAL AREA OF THE MODULE #######################################
+
+labelframe .msgb -pady 2 -padx 2 \
+    -text "Broadcaster un message \[$APP, ident = $APG_ident\]" -fg $APG_int_coltitle
+
+label .msgb.l -text "Saisir un message"
+button .msgb.b -text "Broadcast" -command TST_msg_broadcast
+text .msgb.t -width 24 -height 1
+pack .msgb.l .msgb.t .msgb.b -side left
+
+
+labelframe .msgd -pady 2 -padx 2 \
+    -text "Envoyer un message ciblé \[$APP, ident = $APG_ident\]" -fg $APG_int_coltitle
+
+label .msgd.ld -text "Destinataire"
+text .msgd.td -width 24 -height 1
+label .msgd.l -text "Saisir un message"
+text .msgd.t -width 24 -height 1
+button .msgd.b -text "Envoyer" -command TST_msg_send
+
+pack .msgd.ld .msgd.td -side left
+pack .msgd.l .msgd.t .msgd.b -side left
+
+########################################################################
+  
+### COMMAND LINE OPTION #######################################################
+foreach option $APG_lstargs {
+    set name [lindex [split $option "="] 0]
+    set value [lindex [split $option "="] 1]
+ 
+    switch -- $name {
+	--hlg-hini {
+	    if { $value == "" } {
+		APG_vrb_dispwarning "option $name found without argument ; ignored"
+	    } else {
+		set HLG_snp_hsauv $value
+		APG_vrb_dispnotif "option $option found; initial Lamport's clock value=$value"
+            }
+	}
+    }
+}
+###############################################################################
+ 
+ 
+### PROCEDURES OF THE MODULE ##################################################
+
+
+### PROCEDURES OF THE MODULE ###########################################
+
+########################################################################
+#-- Procedure TST_msg_send ---------------------------------------#
+#
+########################################################################
+
+proc TST_msg_send { } {
+	set dest [.msgd.td get "1.0" "end-1c"]
+	set payload [.msgd.t get "1.0" "end-1c"]
+	APG_vrb_dispdebug "Destinataire:$dest ||| Message:$payload"
+	
+	set msg [APG_msg_createmsg $::TST_msg_mnemoapp $::APP]
+	#Set the type of message
+	set msg2 [APG_msg_addmsg msg $::TST_msg_mnemoTypeMessage "message"]
+	#Set the distination
+	set msg3 [APG_msg_addmsg msg2 $::TST_msg_mnemoDestApp $::APP]
+	#Set the distination
+	set msg4 [APG_msg_addmsg msg2 $::TST_msg_mnemoDestNode $dest]
+	#Set the real payload
+	set msg5 [APG_msg_addmsg msg3 $::TST_msg_mnemoPayload $payload]
+	#Send the message
+	TST_snd_send $msg5 $::APP
+
+}
+
+########################################################################
+#-- TST_msg_broadcast -------------------------------------#
+#
+########################################################################
+
+proc TST_msg_broadcast { } {
+	set payload [.msgb.t get "1.0" "end-1c"]
+	APG_vrb_dispdebug "Message:$payload"
+}
+
+########################################################################

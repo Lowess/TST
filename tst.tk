@@ -1,0 +1,129 @@
+#!/bin/sh
+# the next line restarts using wish \
+exec wish "$0" "$@"
+
+#    tst
+#    an airplug compatible program
+#    author: Bertrand Ducourthial AT utc.fr, Anthony Buisset (v0.1)
+#    license type: free of charge license for academic and research purpose
+#    see license.txt
+
+# Application dite 'de controle' utilisee pour l'enseignement
+
+### INITIALISATION STANDARD DE L'APPLICATION COMPATIBLE AIRPLUG ###############
+# nom standard de l'application (nom du rep. dans la distribution)
+# trois lettres majuscules pour APP, trois lettres minuscules pour app
+set APP "TST"
+set app "tst"
+
+# Recuperation de la valeur de la variable d'environnement APG_PATH,
+# qui indique le repertoire de la distribution AIRPLUG
+# et de la variable APG_LANG qui indique la langue a utiliser.
+if { [ catch {
+		set APG_PATH $env(APG_PATH)
+		set APG_LANG $env(APG_LANG)
+    set libapgfile [open $APG_PATH/LIBAPGTK/LIBAPGTK/libapg.tk r]
+    close $libapgfile
+    
+} ] } {
+    if { [info exists APG_PATH] == 0 } {
+				set APG_PATH "??"
+    }
+    if { [info exists APG_LANG] == 0 } {
+				set APG_LANG "english"
+    }
+		if { $APG_LANG == "french" } {
+				puts stderr "\n\033\[1;31m- $::app\(local\): libapg.tk non trouvee\n \
+                         Verifier l'installation. APG_PATH=$APG_PATH\n \
+                         Se placer dans le repertoire bin, faire source config.sh\n \
+                         Se reporter a la documentation en ligne. Contacter l'equipe Airplug.\
+                         \033\[0;00m\n"
+		} else {
+				puts stderr "\n\033\[1;31m- $::app\(local\): libapg.tk not found\n \
+                         Check the installation. APG_PATH=$APG_PATH\n \
+                         In the bin directory, type source config.sh\n \
+                         See the on-line documentation. Contact the Airplug team.\
+                         \033\[0;00m\n"
+		}				
+    exit
+} else {
+    source $APG_PATH/LIBAPGTK/LIBAPGTK/libapg.tk
+		if { $APG_LANG == "french" } {
+				APG_vrb_dispnotif "utilisation de la distribution airplug $APG_PATH"
+		} else {
+				APG_vrb_dispnotif "using the Airplug distribution $APG_PATH"
+		}
+}
+###############################################################################
+
+	      
+### SURCHARGE DE VARIABLES ####################################################
+set APP_msgapropos \
+"TST v0.3
+application template (control application for teaching)
+Bertrand Ducourthial AT utc.fr
+Lab. Heudiasyc, UMR CNRS 6599
+Universite de Technologie de Compiegne
+See license.txt"
+
+set APP_msghelp \
+"
+
+Exemple d'utilisation :
+ ./bas.tk --dest=TST --whatwho --ident=writter --auto | ./tst.tk --whatwho --ident=writter --verbose=5 | ./tst.tk --whatwho --ident=reader| ./bas.tk --ident=reader --whatwho
+"
+###############################################################################
+
+
+### LECTURE FICHIERS APPLICATIONS + AFFICHAGE ZONES ###########################
+## Lecture des fichiers composant l'application
+source $PATH/rc-tst.tk
+source $PATH/tst-snd.tk
+source $PATH/tst-rcv.tk
+source $PATH/tst-svg.tk
+source $PATH/tst-msg.tk
+
+## Ajout des zones crees, avec option d'affichage
+APG_int_addzone rcv "Réceptions" 1
+APG_int_addzone snd "Emissions" 1
+APG_int_addzone msgb "Message broadcast" 1
+APG_int_addzone msgd "Message ciblé" 1
+
+## Affichage des zones
+APG_int_displayzones
+###############################################################################
+
+
+
+#-- Procedure TST_start ------------------------------------------------------#
+# Action : gere le depart de l'application.                                   #
+# Entree : rien                                                               #
+# Retour : rien                                                               #
+#-----------------------------------------------------------------------------#
+proc TST_start { } {
+
+		APG_vrb_dispnotif "Starting TST" "TST_start" 3
+
+		# abonnement a l'application locale ROU
+		APG_begin_lch "BAS"
+		# abonnement a l'application distance TST
+		APG_begin_air $::APP
+}
+
+#-- Procedure TST_stop -------------------------------------------------------#
+# Action : gere la fin de l'application.                                      #
+# Entree : rien                                                               #
+# Retour : rien                                                               #
+#-----------------------------------------------------------------------------#
+proc TST_stop { } {
+		APG_vrb_dispnotif "Stopping TST" "TST_stop" 3
+
+    # arret d'une eventuelle sauvegarde en cours
+	  APG_svg_stop
+
+		# fin de l'application
+	  exit
+}
+
+### INITIALISATION DU DEMARRAGE ################################################
+APG_init
