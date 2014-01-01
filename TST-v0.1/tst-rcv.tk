@@ -14,7 +14,15 @@ set TST_rcv_app $APG_msg_unknown
 
 # mnemonique pour le header TST, contenant le nom de l'application qui a emis
 # le message transporte.
+
 set TST_rcv_mnemoapp $TST_rc_mnemoapp
+set TST_rcv_mnemoPayload $TST_rc_mnemoPayload
+
+#Les mnemoniques suivants doivent être ceux de ROU
+set TST_rcv_mnemoDestNode $TST_rc_mnemoDestNode
+set TST_rcv_mnemoDestApp $TST_rc_mnemoDestApp
+set TST_rcv_mnemoTypeMessage $TST_rc_mnemoTypeMessage
+
 
 ###############################################################################
 
@@ -71,55 +79,23 @@ proc APG_receive_whatwho { what who } {
     set ::TST_rcv_msg $what
     set ::TST_rcv_app $who
 
-	APG_vrb_dispdebug "TST reception $who ||| $what "
-
-		# Traitement different selon l'emetteur.
-    switch -- $::TST_rcv_app \
-				$::APP {
-
-						# Reception d'un message d'une application TST distante,
-						# => transfert vers l'application BAS locale.
-						
-						# Recuperation de la valeur du champs application emettrice dans le
-						# message recu.
-						set app [APG_msg_splitstr what $::TST_rcv_mnemoapp]
-
-						# Recuperation eventuelle d'autres champs.
-
-						# Ajout eventuel de traitements ici.
-
-						# Recuperation du message qui a ete concatene au header
-						# a l'emission. TST_rcv_mnemoapp doit etre le dernier mnemonique
-						# avant le message concatene. Adapter si des champs ont ete ajoutes.
-						set msg [APG_msg_endstr what $::TST_rcv_mnemoapp true]
-
-						# Transfert du message a l'application locale $app
-						TST_snd_send $msg $app
-				} \
-				default {
-						# Reception d'un message d'une application autre que TST.
-						# On suppose donc qu'il s'agit d'une application locale dont les
-						# communications sont interceptees par TST pour realiser un controle
-						# sur son execution.
-						# => transfert vers les applications TST distantes.
-						
-						# Ajout eventuel de traitements ici.
-
-
-						# Creation d'un header contenant l'application emettrice.
-						# Utilisation d'un mnemonique pour retrouver ce champs
-						# facilement a la reception.
-						set header [APG_msg_createmsg $::TST_rcv_mnemoapp $who]
-
-						# Ajout eventuel d'autres champs dans le header ici.
-
-						# Formation du message en concatenant le header et le message recu.
-						set msg [APG_msg_concatemsg $header $what]
-
-						# Appel de la procedure d'emission pour emettre le message msg
-						# vers d'autres applications TST (cette procedure permet de mettre
-						# a jour l'interface du module snd). NB : $::APP = "TST".
-						TST_snd_send $msg $::APP
-				}
+	# Reception d'un message d'une application TST distante,
+	# => transfert vers l'application BAS locale.
+	
+	# Recuperation de la valeur du champs application emettrice dans le
+	# message recu.
+	set app [APG_msg_splitstr what $::TST_rcv_mnemoapp]
+	set destApp [APG_msg_splitstr what $::TST_rcv_mnemoDestApp]
+	
+	if { $destApp == $::APG_ident } {
+		APG_vrb_dispdebug "### TST reception $who ||| $what"
+				
+		set typeMessage [APG_msg_splitstr what $::TST_rcv_mnemoTypeMessage]
+		set payload [APG_msg_splitstr what $::TST_rcv_mnemoPayload]
+		
+		if { $typeMessage == "message" } {
+			set ::TST_msg_received $payload
+		}
+	}
 }
 

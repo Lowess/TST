@@ -14,6 +14,8 @@ set TST_msg_mnemoDestNode $TST_rc_mnemoDestNode
 set TST_msg_mnemoDestApp $TST_rc_mnemoDestApp
 set TST_msg_mnemoTypeMessage $TST_rc_mnemoTypeMessage
 
+set TST_msg_received ""
+
 ######################################################################## 
  
 ### GRAPHICAL AREA OF THE MODULE #######################################
@@ -38,6 +40,13 @@ button .msgd.b -text "Envoyer" -command TST_msg_send
 
 pack .msgd.ld .msgd.td -side left
 pack .msgd.l .msgd.t .msgd.b -side left
+
+labelframe .msgr -pady 2 -padx 2 \
+
+label .msgr.ldesc -text "Reçu" -width 4 -anchor w
+label .msgr.l -textvariable TST_msg_received -width 4 -anchor w
+pack .msgr.ldesc .msgr.l -side left
+
 
 ########################################################################
   
@@ -73,20 +82,21 @@ foreach option $APG_lstargs {
 proc TST_msg_send { } {
 	set dest [.msgd.td get "1.0" "end-1c"]
 	set payload [.msgd.t get "1.0" "end-1c"]
-	APG_vrb_dispdebug "Destinataire:$dest ||| Message:$payload"
 	
 	set msg [APG_msg_createmsg $::TST_msg_mnemoapp $::APP]
 	#Set the type of message
 	set msg2 [APG_msg_addmsg msg $::TST_msg_mnemoTypeMessage "message"]
 	#Set the distination
-	set msg3 [APG_msg_addmsg msg2 $::TST_msg_mnemoDestApp $::APP]
+	set msg3 [APG_msg_addmsg msg2 $::TST_msg_mnemoDestApp $dest]
 	#Set the distination
-	set msg4 [APG_msg_addmsg msg2 $::TST_msg_mnemoDestNode $dest]
+	set msg4 [APG_msg_addmsg msg3 $::TST_msg_mnemoDestNode $dest]
 	#Set the real payload
-	set msg5 [APG_msg_addmsg msg3 $::TST_msg_mnemoPayload $payload]
+	set msg5 [APG_msg_addmsg msg4 $::TST_msg_mnemoPayload $payload]
+	
+	APG_vrb_dispdebug "###MESSAGE AU DEPART $msg5"
+	
 	#Send the message
 	TST_snd_send $msg5 $::APP
-
 }
 
 ########################################################################

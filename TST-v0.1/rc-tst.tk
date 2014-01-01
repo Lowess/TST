@@ -11,10 +11,9 @@ set TST_rc_mnemoapp "apptst"
 
 set TST_rc_mnemoPayload "payload"
 
-# Mêmes mnemoniques que ROU
+# Mêmes mnemoniques que ROU réutilisés dans TST
 set TST_rc_mnemoTypeMessage "typeMessage"
 
 set TST_rc_mnemoDestNode "destNode"
 
 set TST_rc_mnemoDestApp "destApp"
-
