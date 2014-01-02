@@ -22,6 +22,7 @@ set TST_rcv_mnemoPayload $TST_rc_mnemoPayload
 set TST_rcv_mnemoDestNode $TST_rc_mnemoDestNode
 set TST_rcv_mnemoDestApp $TST_rc_mnemoDestApp
 set TST_rcv_mnemoTypeMessage $TST_rc_mnemoTypeMessage
+set TST_rcv_mnemoBroadcast $TST_rc_mnemoBroadcast
 
 
 ###############################################################################
@@ -91,10 +92,15 @@ proc APG_receive_whatwho { what who } {
 		APG_vrb_dispdebug "### TST reception $who ||| $what"
 				
 		set typeMessage [APG_msg_splitstr what $::TST_rcv_mnemoTypeMessage]
+		set isBroadcastMessage [APG_msg_splitstr what $::TST_rcv_mnemoBroadcast]
 		set payload [APG_msg_splitstr what $::TST_rcv_mnemoPayload]
 		
 		if { $typeMessage == "message" } {
-			set ::TST_msg_received $payload
+			if { $isBroadcast == "broadcast" } {
+				set ::TST_msg_broadcastReceived $payload
+			} else {
+				set ::TST_msg_received $payload	
+			}
 		}
 	}
 }

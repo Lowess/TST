@@ -17,3 +17,5 @@ set TST_rc_mnemoTypeMessage "typeMessage"
 set TST_rc_mnemoDestNode "destNode"
 
 set TST_rc_mnemoDestApp "destApp"
+
+set TST_rc_mnemoBroadcast "broadcast"

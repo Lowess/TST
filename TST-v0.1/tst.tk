@@ -87,6 +87,7 @@ source $PATH/tst-msg.tk
 APG_int_addzone rcv "Réceptions" 1
 APG_int_addzone snd "Emissions" 1
 APG_int_addzone msgb "Message broadcast" 1
+APG_int_addzone msgbr "Message reçu" 1
 APG_int_addzone msgd "Message ciblé" 1
 APG_int_addzone msgr "Message recu" 1
 

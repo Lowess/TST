@@ -13,6 +13,7 @@ set TST_msg_mnemoPayload $TST_rc_mnemoPayload
 set TST_msg_mnemoDestNode $TST_rc_mnemoDestNode
 set TST_msg_mnemoDestApp $TST_rc_mnemoDestApp
 set TST_msg_mnemoTypeMessage $TST_rc_mnemoTypeMessage
+set TST_msg_mnemoBroadcast $TST_rc_mnemoBroadcast
 
 set TST_msg_received ""
 
@@ -28,6 +29,14 @@ button .msgb.b -text "Broadcast" -command TST_msg_broadcast
 text .msgb.t -width 24 -height 1
 pack .msgb.l .msgb.t .msgb.b -side left
 
+
+labelframe .msgbr -pady 2 -padx 2 \
+
+label .msgbr.ldesc -text "Reçu" -width 4 -anchor w
+label .msgbr.l -textvariable TST_msg_broadcastReceived -width 4 -anchor w
+pack .msgbr.ldesc .msgbr.l -side left
+
+####
 
 labelframe .msgd -pady 2 -padx 2 \
     -text "Envoyer un message ciblé \[$APP, ident = $APG_ident\]" -fg $APG_int_coltitle
@@ -106,7 +115,19 @@ proc TST_msg_send { } {
 
 proc TST_msg_broadcast { } {
 	set payload [.msgb.t get "1.0" "end-1c"]
-	APG_vrb_dispdebug "Message:$payload"
+	
+	set msg [APG_msg_createmsg $::TST_msg_mnemoapp $::APP]
+	#Set the type of message
+	set msg2 [APG_msg_addmsg msg $::TST_msg_mnemoTypeMessage "message"]
+	#Set the broadcast mnemo
+	set msg3 [APG_msg_addmsg msg2 $::TST_msg_mnemoBroadcast "broadcast"]
+	#Set the real payload
+	set msg4 [APG_msg_addmsg msg3 $::TST_msg_mnemoPayload $payload]
+	
+	APG_vrb_dispdebug "###MESSAGE BROADCAST AU DEPART message:$payload"
+	
+	#Send the message
+	TST_snd_send $msg4 $::APP
 }
 
 ########################################################################
